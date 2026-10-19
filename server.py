@@ -1,65 +1,96 @@
-import os
+import json
+from pathlib import Path
 
-from anyio import Path
-from tinytag import TinyTag
+from tinytag import TinyTag, TinyTagException
+
+BASE_DIR = Path(__file__).parent
+MUSIC_DIR = BASE_DIR / "music"
+TV_DIR = BASE_DIR / "tv"
 
 
-musicDir = Path(__file__).parent / "music"
-tvDir = Path(__file__).parent / "tv"
+def format_length(seconds):
+    """Seconds -> 'M:SS', or None if the duration is unknown."""
+    if seconds is None:
+        return None
+    minutes, secs = divmod(int(seconds), 60)
+    return f"{minutes}:{secs:02d}"
 
-def createMusicRecords():
 
-    if not os.path.exists(musicDir):
-        return "File not found."
-
-    file_name = os.path.basename(musicDir)
-    size_kb = round(os.path.getsize(musicDir) / 1024, 2)
-
+def read_tag(path):
+    """Returns a TinyTag, or None if the file can't be read."""
     try:
-        tag = TinyTag.get(musicDir)
-        length = f"{int(tag.duration // 60)}:{int(tag.duration % 60):02d}" # Format MM:SS
-        album = tag.album
-        artist = tag.artist
-        genre = tag.genre
-        track = tag.track
-    except Exception:
-        length = album = artist = genre = track = "N/A"
+        return TinyTag.get(path)
+    except (TinyTagException, OSError):
+        return None
 
+
+def base_record(path, tag):
     return {
-        "file_name": file_name,
-        "size_kb": size_kb,
-        "length": length,
-        "album": album,
-        "artist": artist,
-        "genre": genre,
-        "track": track
+        "file_name": path.name,
+        "path": str(path),
+        "size_kb": round(path.stat().st_size / 1024, 2),
+        "length": format_length(tag.duration) if tag else None,
+        "genre": tag.genre if tag else None,
     }
 
-def createTVRecords():
-   if not os.path.exists(tvDir):
-        return "File not found."
 
-    file_name = os.path.basename(tvDir)
-    size_kb = round(os.path.getsize(tvDir) / 1024, 2)
+def media_files(folder):
+    """Every supported file under folder (including sub-folders), sorted."""
+    if not folder.is_dir():
+        return []
+    return sorted(p for p in folder.rglob("*")
+                  if p.is_file() and TinyTag.is_supported(str(p)))
 
+
+def create_music_records():
+    records = []
+    for path in media_files(MUSIC_DIR):
+        tag = read_tag(path)
+        records.append({
+            **base_record(path, tag),
+            "title": tag.title if tag else None,
+            "album": tag.album if tag else None,
+            "artist": tag.artist if tag else None,
+            "track": tag.track if tag else None,
+        })
+    return records
+
+
+def create_tv_records():
+    records = []
+    for path in media_files(TV_DIR):
+        tag = read_tag(path)
+        records.append({
+            **base_record(path, tag),
+            "title": (tag.title if tag and tag.title else path.stem),
+            "year": tag.year if tag else None,
+           
+        })
+    return records
+
+
+def Create_channel(title, media_ids, shuffle, type):
+    if not media_ids:
+        raise ValueError("media_ids must not be empty")
+        return []
     try:
-        tag = TinyTag.get(tvDir )
-        length = f"{int(tag.duration // 60)}:{int(tag.duration % 60):02d}" # Format MM:SS
-        director = tag.director
-        year = tag.year
-        parental_rating = tag.parental_rating
-        genre = tag.genre
-        track = tag.track
-    except Exception:
-        length = director = year = parental_rating = genre = track = "N/A"
+        with open(BASE_DIR / "channels.json", "r") as file:
+            channels = json.load(file)
+    except (json.JSONDecodeError, FileNotFoundError):
+        channels = {"music": [], "tv": [], "live": []}
 
-    return {
-        "file_name": file_name,
-        "size_kb": size_kb,
-        "length": length,
-        "director": director,
-        "year": year,
-        "parental_rating": parental_rating,
-        "genre": genre,
-        "track": track
+    new_channel = {
+        "title": title,
+        "media_ids": media_ids,
+        "shuffle": shuffle,
+        "type": type
     }
+    channels.append(new_channel)
+
+
+
+
+if __name__ == "__main__":
+    for r in create_music_records() + create_tv_records():
+        print(r)
+
