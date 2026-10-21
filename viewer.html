@@ -2,8 +2,71 @@
 <head>
     <meta charset="UTF-8">
     <title>Channel Viewer</title>
-    <link rel="stylesheet" href="style.css">
-</head><body>
 
-    <div class="playback"></div>
+    <style>
+        body {
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+
+            display: flex;
+            justify-content: center;
+        }
+        .playback {
+            position: absolute;
+            bottom: 15%;
+            width: 80%;
+            height: 4rem;
+            background-color: #000;
+            opacity: 0.4;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+        .playback-checkbox {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin: 0 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .playback-checkbox:checked + #playButton {
+            display: none;
+        }
+        .playback-checkbox:not(:checked) ~ #pauseButton {
+            display: none;
+        }
+
+    </style>
+
+</head><body>
+    <div class="media">
+        <video id="videoPlayer" width="100%" height="100%" autoplay muted loop>
+            <source src="./tv/IMG_1232.MOV" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="playback">
+        <div class="row">
+        <label for="playbackCheckbox" class="playback-checkbox">
+            <input class="playback-checkbox" type="checkbox" id="playbackCheckbox" style="display: none;">
+            <img id="playButton" src="./play.svg" alt="play">
+            <img id="pauseButton" src="./pause.svg" alt="pause">
+        </label>
+        </div>
+        <input style="width: 80%;" type="range" id="playbackSlider" min="0" max="1" step="0.01" value="0">
+        
+    </div>
 </body>

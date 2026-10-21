@@ -68,16 +68,26 @@ def create_tv_records():
         })
     return records
 
+def Read_chanel():
+
+    with open(BASE_DIR / "channels.json", "r") as file:
+        channels = json.load(file)
+
+    return channels
 
 def Create_channel(title, media_ids, shuffle, type):
     if not media_ids:
         raise ValueError("media_ids must not be empty")
-        return []
     try:
         with open(BASE_DIR / "channels.json", "r") as file:
             channels = json.load(file)
     except (json.JSONDecodeError, FileNotFoundError):
-        channels = {"music": [], "tv": [], "live": []}
+        channels = []
+
+    if channels == {}:
+        channels = []
+    if not isinstance(channels, list):
+        raise ValueError("channels.json must contain a JSON list of channels")
 
     new_channel = {
         "title": title,
@@ -87,6 +97,9 @@ def Create_channel(title, media_ids, shuffle, type):
     }
     channels.append(new_channel)
 
+    with open(BASE_DIR / "channels.json", "w") as file:
+        json.dump(channels, file, indent=2)
+
 
 
 
@@ -94,3 +107,4 @@ if __name__ == "__main__":
     for r in create_music_records() + create_tv_records():
         print(r)
 
+Read_chanel()
