@@ -22,10 +22,10 @@ def onSubmit(self):
         media_ids = 1
         shuffle = self.shuffle.isChecked()
         type = "music"
+
         
-
         server.Create_channel(title, media_ids, shuffle, type)
-
+        self.load_channels()
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
@@ -80,6 +80,7 @@ class Ui_MainWindow(object):
         self.Genre.setGeometry(QRect(620, 140, 141, 31))
         self.submit = QPushButton(self.centralwidget)
         self.submit.setObjectName(u"submit")
+        self.submit.clicked.connect(lambda checked: onSubmit(self))
         self.submit.setGeometry(QRect(480, 210, 281, 31))
         self.label_ip = QLabel(self.centralwidget)
         self.label_ip.setObjectName(u"label_ip")
@@ -170,6 +171,12 @@ class Ui_MainWindow(object):
  
     
     def load_channels(self):
+        while self.channelsLayout.count():
+            item = self.channelsLayout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
         for index, channel in enumerate(server.Read_chanel()):
             card = QWidget(self.scrollAreaWidgetContents)
             card.setObjectName(f"channel_{index}")
@@ -180,12 +187,7 @@ class Ui_MainWindow(object):
 
             card_layout = QVBoxLayout(card)
 
-            font = QFont()
-                    font.setPointSize(20)
-                    self.title_2.setFont(font)
-            font1 = QFont()
-                    font.setPointSize(10)
-                    self.title_2.setFont(font1)
+    
 
             title_label = QLabel(
                 channel.get("title", "Untitled"),
@@ -200,6 +202,13 @@ class Ui_MainWindow(object):
             card_layout.addWidget(title_label)
             card_layout.addWidget(genre_label)
             self.channelsLayout.addWidget(card)
+            title_font = QFont()
+            title_font.setPointSize(20)
+            title_label.setFont(title_font)
+
+            genre_font = QFont()
+            genre_font.setPointSize(10)
+            genre_label.setFont(genre_font)
 
 
         
