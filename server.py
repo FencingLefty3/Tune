@@ -1,11 +1,37 @@
 import json
+import subprocess
 from pathlib import Path
+import time
 
 from tinytag import TinyTag, TinyTagException
 
 BASE_DIR = Path(__file__).parent
 MUSIC_DIR = BASE_DIR / "music"
 TV_DIR = BASE_DIR / "tv"
+
+import socket
+
+def get_local_ipv4():  
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+    except Exception:
+        local_ip = "127.0.0.1"
+    finally:
+        s.close()
+    return local_ip
+
+localHost = subprocess.Popen(["python", "-m", "http.server"])
+
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("\nShutting down server...")
+    localHost.terminate()
+    localHost.wait()
+    print("Server stopped.")
 
 
 def format_length(seconds):

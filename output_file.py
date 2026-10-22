@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QLabel, QMainWindow,
     QMenu, QMenuBar, QPushButton, QScrollArea,
     QSizePolicy, QStatusBar, QTextEdit, QWidget)
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
@@ -64,7 +65,7 @@ class Ui_MainWindow(object):
         self.submit.setGeometry(QRect(480, 210, 281, 31))
         self.label_ip = QLabel(self.centralwidget)
         self.label_ip.setObjectName(u"label_ip")
-        self.label_ip.setGeometry(QRect(480, 290, 141, 31))
+        self.label_ip.setGeometry(QRect(480, 320, 141, 31))
         self.Port = QTextEdit(self.centralwidget)
         self.Port.setObjectName(u"Port")
         self.Port.setGeometry(QRect(620, 290, 141, 31))
@@ -78,27 +79,10 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 437, 547))
-        self.widget = QWidget(self.scrollAreaWidgetContents)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(0, 0, 431, 91))
-        self.widget.setAutoFillBackground(False)
-        self.widget.setStyleSheet(u"#widget {\n"
-"    background-color: #757575;\n"
-"}")
-        self.title_2 = QLabel(self.widget)
-        self.title_2.setObjectName(u"title_2")
-        self.title_2.setGeometry(QRect(10, 10, 91, 41))
-        font = QFont()
-        font.setPointSize(20)
-        self.title_2.setFont(font)
-        self.title_3 = QLabel(self.widget)
-        self.title_3.setObjectName(u"title_3")
-        self.title_3.setGeometry(QRect(10, 40, 91, 41))
-        font1 = QFont()
-        font1.setPointSize(10)
-        self.title_3.setFont(font1)
-        self.title_3.setAutoFillBackground(False)
         self.channelsScrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.host = QPushButton(self.centralwidget)
+        self.host.setObjectName(u"host")
+        self.host.setGeometry(QRect(480, 290, 131, 31))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -163,8 +147,7 @@ class Ui_MainWindow(object):
         self.submit.setText(QCoreApplication.translate("MainWindow", u"Create", None))
         self.label_ip.setText(QCoreApplication.translate("MainWindow", u"192.241.252/8000", None))
         self.label_port.setText(QCoreApplication.translate("MainWindow", u"Port", None))
-        self.title_2.setText(QCoreApplication.translate("MainWindow", u"Title", None))
-        self.title_3.setText(QCoreApplication.translate("MainWindow", u"Genre", None))
+        self.host.setText(QCoreApplication.translate("MainWindow", u"Host", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))

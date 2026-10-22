@@ -16,7 +16,6 @@ class QMainWindow(QWidget):
 
 
 def onSubmit(self):
-        print("test")
 
         title = self.title.toPlainText()
         media_ids = 1
@@ -34,10 +33,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QCursor, QFont, QFontDatabase, QGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
+    QTransform,)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QLabel, QMainWindow,
     QMenu, QMenuBar, QPushButton, QScrollArea,
-    QSizePolicy, QStatusBar, QVBoxLayout, QTextEdit, QWidget)
+    QSizePolicy, QStatusBar,  QVBoxLayout, QTextEdit, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -80,26 +79,31 @@ class Ui_MainWindow(object):
         self.Genre.setGeometry(QRect(620, 140, 141, 31))
         self.submit = QPushButton(self.centralwidget)
         self.submit.setObjectName(u"submit")
-        self.submit.clicked.connect(lambda checked: onSubmit(self))
         self.submit.setGeometry(QRect(480, 210, 281, 31))
         self.label_ip = QLabel(self.centralwidget)
-        self.label_ip.setObjectName(u"label_ip")
-        self.label_ip.setGeometry(QRect(480, 290, 141, 31))
+        self.label_ip.setObjectName(str(server.get_local_ipv4()))
+        self.label_ip.setGeometry(QRect(480, 320, 141, 31))
         self.Port = QTextEdit(self.centralwidget)
         self.Port.setObjectName(u"Port")
         self.Port.setGeometry(QRect(620, 290, 141, 31))
         self.label_port = QLabel(self.centralwidget)
         self.label_port.setObjectName(u"label_port")
         self.label_port.setGeometry(QRect(630, 330, 91, 16))
+        self.submit.clicked.connect(lambda checked: onSubmit(self))
+        
         self.channelsScrollArea = QScrollArea(self.centralwidget)
         self.channelsScrollArea.setObjectName(u"channelsScrollArea")
         self.channelsScrollArea.setGeometry(QRect(0, 0, 441, 551))
         self.channelsScrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 437, 547))
+        self.channelsScrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.host = QPushButton(self.centralwidget)
         self.channelsLayout = QVBoxLayout(self.scrollAreaWidgetContents)
         self.channelsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.channelsScrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.host.setObjectName(u"host")
+        self.host.setGeometry(QRect(480, 290, 131, 31))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -162,13 +166,13 @@ class Ui_MainWindow(object):
         self.shuffle.setText(QCoreApplication.translate("MainWindow", u"Shuffle", None))
         self.label_genre.setText(QCoreApplication.translate("MainWindow", u"Genre", None))
         self.submit.setText(QCoreApplication.translate("MainWindow", u"Create", None))
-        self.label_ip.setText(QCoreApplication.translate("MainWindow", u"192.241.252/8000", None))
+        self.label_ip.setText(QCoreApplication.translate("MainWindow", str(server.get_local_ipv4()), None))
         self.label_port.setText(QCoreApplication.translate("MainWindow", u"Port", None))
+        self.host.setText(QCoreApplication.translate("MainWindow", u"Host", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))
 
- 
     
     def load_channels(self):
         while self.channelsLayout.count():
@@ -209,7 +213,8 @@ class Ui_MainWindow(object):
             genre_font = QFont()
             genre_font.setPointSize(10)
             genre_label.setFont(genre_font)
-
+    def host_server(self):
+        return
 
         
 
