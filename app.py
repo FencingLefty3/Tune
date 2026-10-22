@@ -27,7 +27,7 @@ def onSubmit(self):
         self.load_channels()
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
+    QMetaObject, QObject, QPoint, QProcess, QRect,
     QSize, QTime, QUrl, Qt)
 from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QCursor, QFont, QFontDatabase, QGradient,
@@ -103,6 +103,7 @@ class Ui_MainWindow(object):
         self.channelsLayout = QVBoxLayout(self.scrollAreaWidgetContents)
         self.channelsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.host.setObjectName(u"host")
+        self.host.clicked.connect(lambda checked: self.host_server())
         self.host.setGeometry(QRect(480, 290, 131, 31))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -213,8 +214,26 @@ class Ui_MainWindow(object):
             genre_font = QFont()
             genre_font.setPointSize(10)
             genre_label.setFont(genre_font)
+
     def host_server(self):
-        return
+        if hasattr(self, "local_host_process") and (
+            self.local_host_process.state() != QProcess.ProcessState.NotRunning
+        ):
+            return
+
+        self.local_host_process = QProcess(self.host)
+        self.local_host_process.setWorkingDirectory(str(server.BASE_DIR))
+        self.local_host_process.started.connect(
+            lambda: self.host.setStyleSheet("background-color: #4caf50;")
+        )
+        self.local_host_process.finished.connect(
+            lambda exit_code, exit_status: self.host.setStyleSheet("")
+        )
+        self.local_host_process.errorOccurred.connect(
+            lambda error: self.host.setStyleSheet("")
+        )
+        self.local_host_process.start(sys.executable, ["-m", "http.server"])
+        print("server started")
 
         
 

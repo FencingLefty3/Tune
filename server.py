@@ -22,16 +22,19 @@ def get_local_ipv4():
         s.close()
     return local_ip
 
-localHost = subprocess.Popen(["python", "-m", "http.server"])
 
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    print("\nShutting down server...")
-    localHost.terminate()
-    localHost.wait()
-    print("Server stopped.")
+def runLocalHost():
+    print("starting server")
+    localHost = subprocess.Popen(["python", "-m", "http.server"])
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+        localHost.terminate()
+        localHost.wait()
+        print("Server stopped.")
 
 
 def format_length(seconds):

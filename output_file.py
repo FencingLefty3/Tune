@@ -83,6 +83,7 @@ class Ui_MainWindow(object):
         self.host = QPushButton(self.centralwidget)
         self.host.setObjectName(u"host")
         self.host.setGeometry(QRect(480, 290, 131, 31))
+        self.host.connect()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
