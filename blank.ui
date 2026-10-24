@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>799</width>
-    <height>595</height>
+    <width>802</width>
+    <height>589</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -162,6 +162,16 @@
        <height>547</height>
       </rect>
      </property>
+     <widget class="QSpinBox" name="spinBox">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>20</y>
+        <width>78</width>
+        <height>26</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QPushButton" name="host">
@@ -183,7 +193,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>799</width>
+     <width>802</width>
      <height>33</height>
     </rect>
    </property>

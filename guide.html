@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Guide</title>
+</head>
+<style>
+    body {
+        color: #ffffff;
+        background: #2c2c2e;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+    }
+    .logo {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        color: #757575;
+        height: 3rem;
+        margin: 1rem;
+    }
+    .row {
+        display: flex;
+        flex-direction: row;
+        width: 100dvw;
+        height: 4rem;
+        margin: 2px;
+        outline: 2px solid #757575;
+    }
+    .times {
+        display: flex;
+        flex-direction: row;
+        width: fit-content;
+        height: 4rem;
+        margin: 2px;
+        outline: 2px solid #757575;
+    }
+    .left {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+        width: 8rem;
+        background-color: #1f1f20;
+        margin-right: 2px;
+        outline: 2px solid #757575;
+    }
+    h4 {
+        padding: 0 8px;
+        margin: 2px;
+    }
+    p {
+        padding: 0 8px;
+        margin: 2px;
+    }
+    .content p {
+        font-size: 0.8rem;
+    }
+    .content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-right: 2px;
+        outline: 2px solid #757575;
+    }
+    .time {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-right: 2px;
+        background: #1f1f20;
+    }
+    .left:hover {
+        background-color: #757575;
+    }
+    .content:hover {
+        background-color: #757575;
+    }
+</style>
+<body id="body">
+
+    <div class="logo">
+        <img src="icon.png" style="aspect-ratio: 1/1; width: 2rem; height: 2rem;">
+        <h3 style="font-size: 1.8rem;">Tune</h3>
+    </div>
+
+
+    <div class="times">
+        <div class="time" style="width: 8rem;"></div>
+        
+        <div class="time" style="width: 20rem;">
+            <h4>11:00a</h4>
+        </div>
+        <div class="time" style="width: 20rem;">
+            <h4>12:00p</h4>
+        </div>
+        <div class="time" style="width: 20rem;">
+            <h4>1:00p</h4>
+        </div>
+        <div class="time" style="width: 20rem;">
+            <h4>2:00p</h4>
+        </div>
+        <div class="time" style="width: 20rem;">
+            <h4>3:00p</h4>
+        </div>
+    </div>
+
+</body>
+<script>
+
+    
+
+    async function getChannels() {
+        const res = await fetch("channels.json");
+
+        const data = await res.json();
+
+        return data;
+    }
+    
+    async function main() {
+        const channels = await getChannels();
+
+        console.log(channels)
+
+        const body = document.getElementById("body");
+        let numb = 0
+
+       for (const channel of channels) {
+       
+        body.innerHTML += `<div class="row">
+            <div class="left">
+                <h4>${numb}</h4>
+                <p>${channel.title}</p>
+            </div>
+            <div class="content" style="width: 20rem;">
+                <h4>${channel.title}</h4>
+                <p>${channel.type}</p>
+            </div>
+        </div>`;
+        numb = numb + 1
+       } 
+       
+    }
+    main()
+</script>

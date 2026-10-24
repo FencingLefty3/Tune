@@ -98,8 +98,14 @@ def create_tv_records():
     return records
 
 def Read_chanel():
+    channels_file = BASE_DIR / "channels.json"
+    try:
+        file = channels_file.open("r")
+    except FileNotFoundError:
+        channels_file.write_text("[]", encoding="utf-8")
+        return []
 
-    with open(BASE_DIR / "channels.json", "r") as file:
+    with file:
         channels = json.load(file)
 
     return channels
@@ -130,10 +136,8 @@ def Create_channel(title, media_ids, shuffle, type):
         json.dump(channels, file, indent=2)
 
 
-
-
 if __name__ == "__main__":
     for r in create_music_records() + create_tv_records():
         print(r)
-
-Read_chanel()
+    for r in create_music_records() + create_tv_records():
+        print(r)

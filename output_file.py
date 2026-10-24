@@ -18,14 +18,14 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QLabel, QMainWindow,
     QMenu, QMenuBar, QPushButton, QScrollArea,
-    QSizePolicy, QStatusBar, QTextEdit, QWidget)
-
+    QSizePolicy, QSpinBox, QStatusBar, QTextEdit,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(799, 595)
+        MainWindow.resize(802, 589)
         MainWindow.setAutoFillBackground(True)
         self.view_media_file = QAction(MainWindow)
         self.view_media_file.setObjectName(u"view_media_file")
@@ -79,15 +79,17 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 437, 547))
+        self.spinBox = QSpinBox(self.scrollAreaWidgetContents)
+        self.spinBox.setObjectName(u"spinBox")
+        self.spinBox.setGeometry(QRect(340, 20, 78, 26))
         self.channelsScrollArea.setWidget(self.scrollAreaWidgetContents)
         self.host = QPushButton(self.centralwidget)
         self.host.setObjectName(u"host")
         self.host.setGeometry(QRect(480, 290, 131, 31))
-        self.host.connect()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 799, 33))
+        self.menubar.setGeometry(QRect(0, 0, 802, 33))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuEdit = QMenu(self.menubar)

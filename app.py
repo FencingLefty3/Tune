@@ -1,4 +1,7 @@
 from pathlib import Path
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QAbstractItemView
 from PySide6.QtWidgets import QApplication, QWidget
@@ -16,30 +19,42 @@ class QMainWindow(QWidget):
 
 
 def onSubmit(self):
+    title = self.title.toPlainText().strip()
+    media_files = getattr(self, "selected_files", [])
 
-        title = self.title.toPlainText()
-        media_ids = 1
-        shuffle = self.shuffle.isChecked()
-        type = "music"
+    missing_values = []
+    if not title:
+        missing_values.append("a channel title")
+    if not media_files:
+        missing_values.append("at least one media file")
+    if missing_values:
+        QMessageBox.warning(
+            self.main_window,
+            "Missing information",
+            "Please enter " + " and ".join(missing_values) + ".",
+        )
+        return
 
-        
-        server.Create_channel(title, media_ids, shuffle, type)
-        self.load_channels()
+    shuffle = self.shuffle.isChecked()
+    server.Create_channel(title, media_files, shuffle, "music")
+    self.load_channels()
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QProcess, QRect,
+    QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+from PySide6.QtGui import (QIcon, QAction, QBrush, QColor, QConicalGradient,
     QCursor, QFont, QFontDatabase, QGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform,)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QLabel, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QScrollArea,
-    QSizePolicy, QStatusBar,  QVBoxLayout, QTextEdit, QWidget)
+    QMenu, QMenuBar, QPushButton, QScrollArea, QSpinBox,
+    QSizePolicy, QStatusBar,  QVBoxLayout, QTextEdit, QWidget, QMessageBox, QFileDialog)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        self.main_window = MainWindow
+        self.selected_files = []
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(799, 595)
@@ -68,6 +83,9 @@ class Ui_MainWindow(object):
         self.Upload = QPushButton(self.centralwidget)
         self.Upload.setObjectName(u"Upload")
         self.Upload.setGeometry(QRect(480, 90, 281, 31))
+        self.Upload.clicked.connect(
+            lambda checked=False: self.upload_file(MainWindow)
+        )
         self.shuffle = QCheckBox(self.centralwidget)
         self.shuffle.setObjectName(u"shuffle")
         self.shuffle.setGeometry(QRect(480, 140, 141, 31))
@@ -215,37 +233,82 @@ class Ui_MainWindow(object):
             genre_font.setPointSize(10)
             genre_label.setFont(genre_font)
 
+    def upload_file(self, parent):
+
+        file_paths, _ = QFileDialog.getOpenFileNames(
+            parent,
+            "Select Media Files",
+            "",
+            "Media Files (*.mp3 *.m4a *.flac *.wav *.ogg *.mp4 *.mov *.mkv *.avi);;"
+            "All Files (*)",
+        )
+
+        if file_paths:
+
+            self.selected_files = file_paths
+            print(self.selected_files)
+            
+            print(f"Successfully selected {len(file_paths)} file(s):\n")
+            for path in file_paths:
+                print(f"• {path}")
+        else:
+            print("Selection canceled.")
+
     def host_server(self):
-        if hasattr(self, "local_host_process") and (
-            self.local_host_process.state() != QProcess.ProcessState.NotRunning
-        ):
+        if getattr(self, "local_host_server", None) is not None:
             return
 
-        self.local_host_process = QProcess(self.host)
-        self.local_host_process.setWorkingDirectory(str(server.BASE_DIR))
-        self.local_host_process.started.connect(
-            lambda: self.host.setStyleSheet("background-color: #4caf50;")
+        handler = partial(
+            SimpleHTTPRequestHandler,
+            directory=str(server.BASE_DIR),
         )
-        self.local_host_process.finished.connect(
-            lambda exit_code, exit_status: self.host.setStyleSheet("")
+        try:
+            self.local_host_server = ThreadingHTTPServer(("", 8000), handler)
+        except OSError as error:
+            QMessageBox.critical(
+                self.host,
+                "Unable to start host",
+                f"Could not start the web server on port 8000: {error}",
+            )
+            return
+
+        self.local_host_thread = Thread(
+            target=self.local_host_server.serve_forever,
+            daemon=True,
         )
-        self.local_host_process.errorOccurred.connect(
-            lambda error: self.host.setStyleSheet("")
-        )
-        self.local_host_process.start(sys.executable, ["-m", "http.server"])
-        print("server started")
+        self.local_host_thread.start()
+        self.host.setStyleSheet("background-color: #4caf50;")
+
+    def stop_host_server(self):
+        host_server = getattr(self, "local_host_server", None)
+        if host_server is None:
+            return
+
+        host_server.shutdown()
+        host_server.server_close()
+        self.local_host_thread.join()
+        self.local_host_server = None
+        self.host.setStyleSheet("")
 
         
+try:
+    from ctypes import windll  # Only exists on Windows.
+    myappid = 'FencingLefty3.Tune.Host.03'
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
 
 def main():
     app = QApplication(sys.argv)
     window = QMainWindow()
-    icon_path = Path(__file__).resolve().parent / "icon.png"
+    icon_path = Path(__file__).resolve().parent / "tvLogo.ico"
     window.setWindowIcon(QIcon(str(icon_path)))
+    window.setWindowTitle("Tune Manager")
     ui = Ui_MainWindow()
     ui.setupUi(window)
     ui.load_channels()
+    app.aboutToQuit.connect(ui.stop_host_server)
     window.show()
     return app.exec()
 
