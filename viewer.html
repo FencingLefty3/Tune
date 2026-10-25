@@ -5,7 +5,7 @@
 
     <style>
         body {
-            color: #ffffff;
+            color: #000;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -13,8 +13,15 @@
             height: 100vh;
         }
         .media {
-            width: 100%;
-            height: 100%;
+            width: 100dvw;
+            height: 100dvh;
+        }
+        .player {
+            width: 100dvw;
+            height: 100dvh;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         .playback {
             position: absolute;
@@ -54,9 +61,10 @@
     </style>
 
 </head><body>
-    <div class="media">
-        <video id="player" controls playsinline></video>
+    <div class="media" id="mediaPlayer">
+       <!-- <audio class="player" controls><source src="./music/Chris Stapleton - Bad As I Used To Be (From F1® The Movie) [Official Visualizer] [p13Cn0mONP8].mp3" type="audio/mpeg"></audio>-->
     </div>
+    
     <div class="playback">
         <div class="row">
         <label for="playbackCheckbox" class="playback-checkbox">
@@ -64,8 +72,117 @@
             <img id="playButton" src="./play.svg" alt="play">
             <img id="pauseButton" src="./pause.svg" alt="pause">
         </label>
+        <p id="playbackStatus"></p>
         </div>
         <input style="width: 80%;" type="range" id="playbackSlider" min="0" max="1" step="0.01" value="0">
         
     </div>
 </body>
+<script>
+    let transitionTimer;
+
+    async function getGuide() {
+        const response = await fetch("/api/guide", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`Guide request failed: ${response.status}`);
+        }
+        return response.json();
+    }
+
+    async function loadCurrentShow() {
+        const status = document.getElementById("playbackStatus");
+        const playerHost = document.getElementById("mediaPlayer");
+        const channelTitle = new URLSearchParams(location.search).get("channel");
+
+        if (!channelTitle) {
+            status.textContent = "No channel was specified.";
+            return;
+        }
+
+        try {
+            const guide = await getGuide();
+            const serverNow = Date.parse(guide.server_now_utc);
+            const receivedAt = performance.now();
+
+            if (!Number.isFinite(serverNow) || !Array.isArray(guide.channels)) {
+                throw new Error("The server returned invalid guide data.");
+            }
+
+            const channel = guide.channels.find(
+                item => item.title === channelTitle
+            );
+
+            if (!channel) {
+                status.textContent = `Channel "${channelTitle}" was not found.`;
+                return;
+            }
+
+            const currentShow = (channel.events || []).find(event => {
+                const start = Date.parse(event.start_at_utc);
+                const duration = Number(event.duration_seconds);
+                return Number.isFinite(start) &&
+                    Number.isFinite(duration) &&
+                    duration > 0 &&
+                    start <= serverNow &&
+                    serverNow < start + duration * 1000;
+            });
+
+            if (!currentShow) {
+                status.textContent = `Nothing is currently scheduled on ${channelTitle}.`;
+                return;
+            }
+
+            const start = Date.parse(currentShow.start_at_utc);
+            const end = start + Number(currentShow.duration_seconds) * 1000;
+            const filePath = new URL(currentShow.media_url, location.href).pathname;
+            const isAudio = /\.(mp3|m4a|flac|wav|ogg)$/i.test(filePath);
+            const player = document.createElement(isAudio ? "audio" : "video");
+
+
+            player.className = "player";
+            player.controls = true;
+            player.playsInline = true;
+            player.src = currentShow.media_url;
+
+            playerHost.replaceChildren(player);
+            status.textContent = `${channelTitle} — ${currentShow.title}`;
+
+            player.addEventListener("loadedmetadata", async () => {
+                const estimatedServerNow =
+                    serverNow + (performance.now() - receivedAt);
+                const offsetSeconds = Math.max(
+                    0,
+                    (estimatedServerNow - start) / 1000
+                );
+
+                if (offsetSeconds >= Number(currentShow.duration_seconds)) {
+                    status.textContent = "This show has ended. Loading the next show…";
+                    loadCurrentShow();
+                    return;
+                }
+
+                player.currentTime = Math.min(
+                    offsetSeconds,
+                    Math.max(0, player.duration - 0.25)
+                );
+
+                try {
+                    await player.play();
+                } catch {
+                    status.textContent += " — press Play to start.";
+                }
+            }, { once: true });
+
+            window.clearTimeout(transitionTimer);
+            const remainingMs = end - serverNow;
+            transitionTimer = window.setTimeout(
+                loadCurrentShow,
+                Math.max(1000, remainingMs)
+            );
+        } catch (error) {
+            status.textContent = `Could not load channel: ${error.message}`;
+        }
+    }
+
+    loadCurrentShow();
+</script>

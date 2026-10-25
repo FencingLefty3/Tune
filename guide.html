@@ -10,8 +10,9 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        min-height: 100vh;
+        box-sizing: border-box;
     }
     .logo {
         display: flex;
@@ -24,30 +25,33 @@
     .row {
         display: flex;
         flex-direction: row;
-        width: fit-content;
+        width: 100%;
+        box-sizing: border-box;
         height: 4rem;
-        margin: 2px;
+        margin: 2px 0;
         outline: 2px solid #757575;
     }
     .times {
         display: flex;
         flex-direction: row;
-        width: fit-content;
+        width: 100%;
+        box-sizing: border-box;
         height: 4rem;
-        margin: 2px;
+        margin: 2px 0;
         outline: 2px solid #757575;
     }
     .left {
+        box-sizing: border-box;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
         height: 100%;
-        width: 8rem !important;
+        width: 8rem;
         background-color: #1f1f20;
-        margin-right: 2px;
+        margin-right: 0;
         outline: 2px solid #757575;
-         flex: 0 0 8rem;
+        flex: 0 0 8rem;
     }
     h4 {
         padding: 0 8px;
@@ -69,17 +73,19 @@
         outline: 2px solid #757575;
     }
     .time {
+        box-sizing: border-box;
         height: 100%;
         display: flex;
-        flex: 0 0 10rem;
+        flex: 1 1 0;
+        min-width: 0;
         flex-direction: column;
         justify-content: center;
-        margin-right: 2px;
+        margin-right: 0;
         background: #1f1f20;
     }
     .time-blank {
         flex: 0 0 8rem;
-}
+    }
     .left:hover {
         background-color: #757575;
     }
@@ -89,7 +95,8 @@
     .program-track {
         box-sizing: border-box;
         position: relative;
-        flex: 0 0 calc(50rem + 10px);
+        flex: 1 1 0;
+        min-width: 0;
         height: 100%;
         overflow: hidden;
         background: #252526;
@@ -137,11 +144,14 @@
 <script>
 
     const HOUR_MS = 60 * 60 * 1000;
-    const HOUR_WIDTH_REM = 10;
     const VISIBLE_HOURS = 5;
 
     let guideWindowStart = 0;
     let guideClock = null;
+
+    function timelinePercent(milliseconds) {
+        return (milliseconds / (VISIBLE_HOURS * HOUR_MS)) * 100;
+    }
 
     async function getGuide() {
         const response = await fetch("/api/guide", { cache: "no-store" });
@@ -192,9 +202,15 @@
         const label = document.createElement("div");
         label.className = "left";
 
+        
+
         const number = document.createElement("h4");
         number.textContent = String(index + 1);
 
+        label.addEventListener("click", () => {
+            window.location.href = `viewer.html?channel=${encodeURIComponent(channel.title)}`; 
+        
+        });
         const title = document.createElement("p");
         title.textContent = channel.title || "Untitled channel";
 
@@ -227,13 +243,11 @@
                 block.classList.add("current");
             }
 
-            const leftRem =
-                ((visibleStart - windowStart) / HOUR_MS) * HOUR_WIDTH_REM;
-            const widthRem =
-                ((visibleEnd - visibleStart) / HOUR_MS) * HOUR_WIDTH_REM;
+            const leftPercent = timelinePercent(visibleStart - windowStart);
+            const widthPercent = timelinePercent(visibleEnd - visibleStart);
 
-            block.style.left = `${leftRem}rem`;
-            block.style.width = `${widthRem}rem`;
+            block.style.left = `${leftPercent}%`;
+            block.style.width = `${widthPercent}%`;
             block.textContent = event.title || "Untitled program";
             block.title =
                 `${event.title || "Untitled program"} — ${formatLocalTime(start)}`;
@@ -254,13 +268,12 @@
 
         const liveNow =
             guideClock.serverNowMs + (performance.now() - guideClock.receivedAt);
-        const leftRem =
-            ((liveNow - guideWindowStart) / HOUR_MS) * HOUR_WIDTH_REM;
+        const leftPercent = timelinePercent(liveNow - guideWindowStart);
         const visible =
-            leftRem >= 0 && leftRem <= VISIBLE_HOURS * HOUR_WIDTH_REM;
+            leftPercent >= 0 && leftPercent <= 100;
 
         document.querySelectorAll(".live-line").forEach(line => {
-            line.style.left = `${leftRem}rem`;
+            line.style.left = `${leftPercent}%`;
             line.hidden = !visible;
         });
     }
