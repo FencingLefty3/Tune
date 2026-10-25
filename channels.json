@@ -1,23 +1,95 @@
 [
   {
-    "title": "Music Channel",
-    "media_ids": [
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Aaron-Burr_-Sir.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Alexander-Hamilton.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Ax and the Hatchetmen - Hotel Room.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Chris Stapleton - Bad As I Used To Be (From F1\u00ae The Movie) [Official Visualizer] [p13Cn0mONP8].mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Farmer-Refuted.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Formula 1 Theme.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Here's The Thing [W89VEjv2-ng].mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/My-Shot.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Noah Kahan - The Great Divide (Official Music Video) [SKs80r2Lp34].mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Rihanna - Don't Stop The Music [yd8jh9QYfEs].mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/Tame Impala - Loser.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/The Schuyler Sisters.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/The-Story-of-Tonight.mp3",
-      "E:/JLN-LPTP/ProjectsMain/Terra/Tune/music/You_ll-Be-Back.mp3"
+    "title": "test",
+    "media": [
+      {
+        "path": "97cb701239d364066b4bf938.mp4",
+        "title": "Fire Resistance Ad",
+        "duration_seconds": 21.739
+      }
     ],
+    "start_at_utc": "2026-10-24T17:49:27.374849+00:00",
+    "shuffle": true,
+    "shuffle_seed": 1702863385475088406,
+    "type": "music"
+  },
+  {
+    "title": "Music",
+    "media": [
+      {
+        "path": "media/5260db6efd534958928004af7e2c7e0d.mp3",
+        "title": "Aaron-Burr_-Sir",
+        "duration_seconds": 156.768
+      },
+      {
+        "path": "media/e787b5fc33774fb085314e715298fa79.mp3",
+        "title": "Alexander-Hamilton",
+        "duration_seconds": 235.152
+      },
+      {
+        "path": "media/eb6e0b3b26684d1aaa73db07b3a70f00.mp3",
+        "title": "Ax and the Hatchetmen - Hotel Room",
+        "duration_seconds": 149.064
+      },
+      {
+        "path": "media/f584369119a648d0b0566d31b0d3c542.mp3",
+        "title": "Chris Stapleton - Bad As I Used To Be (From F1\u00ae The Movie) [Official Visualizer] [p13Cn0mONP8]",
+        "duration_seconds": 299.8857142857143
+      },
+      {
+        "path": "media/f63a015ab4434dc6a982851f155e58b8.mp3",
+        "title": "Farmer-Refuted",
+        "duration_seconds": 113.328
+      },
+      {
+        "path": "media/7886bd1240ab4c239d7da7c411585757.mp3",
+        "title": "Formula 1 Theme",
+        "duration_seconds": 194.376
+      },
+      {
+        "path": "media/52a001cf4a994bdc8c1205c053dc011b.mp3",
+        "title": "Here's The Thing [W89VEjv2-ng]",
+        "duration_seconds": 163.44816326530614
+      },
+      {
+        "path": "media/3bcefa9a2fa04432aa015f30d2d4d248.mp3",
+        "title": "My-Shot",
+        "duration_seconds": 332.04
+      },
+      {
+        "path": "media/2a7fd1cbd4104242a9376fa737ecc9f5.mp3",
+        "title": "Noah Kahan - The Great Divide (Official Music Video) [SKs80r2Lp34]",
+        "duration_seconds": 345.18204081632655
+      },
+      {
+        "path": "media/570c674a72034fe0bf3818e0d11f1e18.mp3",
+        "title": "Rihanna - Don't Stop The Music [yd8jh9QYfEs]",
+        "duration_seconds": 233.184
+      },
+      {
+        "path": "media/a47f052df75741079377f96dca1aa2b4.mp3",
+        "title": "Tame Impala - Loser",
+        "duration_seconds": 223.128
+      },
+      {
+        "path": "media/eb6984838d844df4adbf84e0ba78d12d.mp3",
+        "title": "The Schuyler Sisters",
+        "duration_seconds": 184.968
+      },
+      {
+        "path": "media/cc4e3c6c54ca4daabf23687a3725643f.mp3",
+        "title": "The-Story-of-Tonight",
+        "duration_seconds": 93.12
+      },
+      {
+        "path": "media/09b34546c5814cd5a871f23c91e09172.mp3",
+        "title": "You_ll-Be-Back",
+        "duration_seconds": 209.856
+      }
+    ],
+    "start_at_utc": "2026-10-24T18:24:40.522213+00:00",
     "shuffle": false,
+    "shuffle_seed": 12417645978978702516,
     "type": "music"
   }
 ]

@@ -24,7 +24,7 @@
     .row {
         display: flex;
         flex-direction: row;
-        width: 100dvw;
+        width: fit-content;
         height: 4rem;
         margin: 2px;
         outline: 2px solid #757575;
@@ -43,10 +43,11 @@
         justify-content: space-between;
         align-items: center;
         height: 100%;
-        width: 8rem;
+        width: 8rem !important;
         background-color: #1f1f20;
         margin-right: 2px;
         outline: 2px solid #757575;
+         flex: 0 0 8rem;
     }
     h4 {
         padding: 0 8px;
@@ -70,16 +71,54 @@
     .time {
         height: 100%;
         display: flex;
+        flex: 0 0 10rem;
         flex-direction: column;
         justify-content: center;
         margin-right: 2px;
         background: #1f1f20;
     }
+    .time-blank {
+        flex: 0 0 8rem;
+}
     .left:hover {
         background-color: #757575;
     }
     .content:hover {
         background-color: #757575;
+    }
+    .program-track {
+        box-sizing: border-box;
+        position: relative;
+        flex: 0 0 calc(50rem + 10px);
+        height: 100%;
+        overflow: hidden;
+        background: #252526;
+    }
+
+    .program {
+        box-sizing: border-box;
+        position: absolute;
+        top: 0;
+        height: 100%;
+        overflow: hidden;
+        padding: 0.5rem;
+        background: #444;
+        outline: 1px solid #757575;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .program.current {
+        background: #356b3d;
+    }
+    .live-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #ff4545;
+        z-index: 2;
+        pointer-events: none;
     }
 </style>
 <body id="body">
@@ -90,62 +129,189 @@
     </div>
 
 
-    <div class="times">
-        <div class="time" style="width: 8rem;"></div>
-        
-        <div class="time" style="width: 20rem;">
-            <h4>11:00a</h4>
-        </div>
-        <div class="time" style="width: 20rem;">
-            <h4>12:00p</h4>
-        </div>
-        <div class="time" style="width: 20rem;">
-            <h4>1:00p</h4>
-        </div>
-        <div class="time" style="width: 20rem;">
-            <h4>2:00p</h4>
-        </div>
-        <div class="time" style="width: 20rem;">
-            <h4>3:00p</h4>
-        </div>
-    </div>
+    <div class="times" id="timeLegend"></div>
+    <div id="channelRows"></div>
+    <div id="guideError" role="status"></div>
 
 </body>
 <script>
 
-    
+    const HOUR_MS = 60 * 60 * 1000;
+    const HOUR_WIDTH_REM = 10;
+    const VISIBLE_HOURS = 5;
 
-    async function getChannels() {
-        const res = await fetch("channels.json");
+    let guideWindowStart = 0;
+    let guideClock = null;
 
-        const data = await res.json();
+    async function getGuide() {
+        const response = await fetch("/api/guide", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`Guide request failed: ${response.status}`);
+        }
 
-        return data;
+        return response.json();
+    }
+
+    function formatLocalTime(timestamp) {
+        return new Intl.DateTimeFormat(undefined, {
+            hour: "numeric",
+            minute: "2-digit",
+        }).format(timestamp);
+    }
+
+    function startOfLocalHour(timestamp) {
+        const date = new Date(timestamp);
+        date.setMinutes(0, 0, 0);
+        return date.getTime();
+    }
+
+    function addTimeLegend(windowStart) {
+        const legend = document.getElementById("timeLegend");
+        legend.replaceChildren();
+
+        const blank = document.createElement("div");
+        blank.className = "time time-blank";
+        legend.appendChild(blank);
+
+        for (let hour = 0; hour < VISIBLE_HOURS; hour++) {
+            const cell = document.createElement("div");
+            cell.className = "time";
+
+            const label = document.createElement("h4");
+            label.textContent = formatLocalTime(windowStart + hour * HOUR_MS);
+
+            cell.appendChild(label);
+            legend.appendChild(cell);
+        }
+    }
+
+    function addChannelRow(channel, index, windowStart, serverNow) {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const label = document.createElement("div");
+        label.className = "left";
+
+        const number = document.createElement("h4");
+        number.textContent = String(index + 1);
+
+        const title = document.createElement("p");
+        title.textContent = channel.title || "Untitled channel";
+
+        label.append(number, title);
+
+        const track = document.createElement("div");
+        track.className = "program-track";
+
+        for (const event of channel.events || []) {
+            const start = Date.parse(event.start_at_utc);
+            const end = start + Number(event.duration_seconds) * 1000;
+            const visibleStart = Math.max(start, windowStart);
+            const visibleEnd = Math.min(
+                end,
+                windowStart + VISIBLE_HOURS * HOUR_MS
+            );
+
+            if (
+                !Number.isFinite(start) ||
+                !Number.isFinite(end) ||
+                visibleEnd <= visibleStart
+            ) {
+                continue;
+            }
+
+            const block = document.createElement("div");
+            block.className = "program";
+
+            if (start <= serverNow && serverNow < end) {
+                block.classList.add("current");
+            }
+
+            const leftRem =
+                ((visibleStart - windowStart) / HOUR_MS) * HOUR_WIDTH_REM;
+            const widthRem =
+                ((visibleEnd - visibleStart) / HOUR_MS) * HOUR_WIDTH_REM;
+
+            block.style.left = `${leftRem}rem`;
+            block.style.width = `${widthRem}rem`;
+            block.textContent = event.title || "Untitled program";
+            block.title =
+                `${event.title || "Untitled program"} — ${formatLocalTime(start)}`;
+
+            track.appendChild(block);
+        }
+
+        const liveLine = document.createElement("div");
+        liveLine.className = "live-line";
+        track.appendChild(liveLine);
+
+        row.append(label, track);
+        return row;
+    }
+
+    function updateLiveLines() {
+        if (!guideClock) return;
+
+        const liveNow =
+            guideClock.serverNowMs + (performance.now() - guideClock.receivedAt);
+        const leftRem =
+            ((liveNow - guideWindowStart) / HOUR_MS) * HOUR_WIDTH_REM;
+        const visible =
+            leftRem >= 0 && leftRem <= VISIBLE_HOURS * HOUR_WIDTH_REM;
+
+        document.querySelectorAll(".live-line").forEach(line => {
+            line.style.left = `${leftRem}rem`;
+            line.hidden = !visible;
+        });
+    }
+
+    window.setInterval(updateLiveLines, 1000);
+
+    async function updateGuide() {
+        const errorElement = document.getElementById("guideError");
+
+        try {
+            const guide = await getGuide();
+            if (!Array.isArray(guide.channels)) {
+                throw new Error("The server returned an invalid channel list.");
+            }
+
+            const serverNow = Date.parse(guide.server_now_utc);
+            if (!Number.isFinite(serverNow)) {
+                throw new Error("The server returned an invalid time.");
+            }
+
+            guideClock = {
+                serverNowMs: serverNow,
+                receivedAt: performance.now(),
+            };
+
+            guideWindowStart = startOfLocalHour(serverNow);
+
+            addTimeLegend(guideWindowStart);
+
+            const rows = document.getElementById("channelRows");
+            rows.replaceChildren();
+
+            for (const [index, channel] of guide.channels.entries()) {
+                rows.appendChild(
+                    addChannelRow(
+                        channel,
+                        index,
+                        guideWindowStart,
+                        serverNow
+                    )
+                );
+            }
+
+            updateLiveLines();
+            errorElement.textContent = "";
+        } catch (error) {
+            errorElement.textContent = `Could not load guide: ${error.message}`;
+        }
     }
     
-    async function main() {
-        const channels = await getChannels();
 
-        console.log(channels)
-
-        const body = document.getElementById("body");
-        let numb = 0
-
-       for (const channel of channels) {
-       
-        body.innerHTML += `<div class="row">
-            <div class="left">
-                <h4>${numb}</h4>
-                <p>${channel.title}</p>
-            </div>
-            <div class="content" style="width: 20rem;">
-                <h4>${channel.title}</h4>
-                <p>${channel.type}</p>
-            </div>
-        </div>`;
-        numb = numb + 1
-       } 
-       
-    }
-    main()
+    updateGuide();
+    window.setInterval(updateGuide, 60_000);
 </script>

@@ -36,7 +36,15 @@ def onSubmit(self):
         return
 
     shuffle = self.shuffle.isChecked()
-    server.Create_channel(title, media_files, shuffle, "music")
+    media_type = (
+        "video"
+        if all(Path(path).suffix.lower() in {
+            ".mp4", ".mov", ".mkv", ".avi"
+        } for path in media_files)
+        else "music"
+    )
+
+    server.Create_channel(title, media_files, shuffle, media_type)
     self.load_channels()
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
@@ -259,7 +267,7 @@ class Ui_MainWindow(object):
             return
 
         handler = partial(
-            SimpleHTTPRequestHandler,
+            server.TuneRequestHandler,
             directory=str(server.BASE_DIR),
         )
         try:
