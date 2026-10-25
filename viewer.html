@@ -2,11 +2,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Channel Viewer</title>
+    <link rel="icon" type="image/x-icon" href="/tvLogo.ico">
 
     <style>
         body {
-            color: #000;
+            color: #fff;
             font-family: Arial, sans-serif;
+            background: conic-gradient(from 180deg in oklch, oklch(32.28% 0.0000 89.88) 0.0%, oklch(31.73% 0.0008 77.33) 7.1%, oklch(30.60% 0.0020 78.26) 14.3%, oklch(30.00% 0.0034 79.43) 21.4%, oklch(30.99% 0.0047 80.85) 28.6%, oklch(34.73% 0.0059 82.52) 35.7%, oklch(42.30% 0.0068 84.56) 42.9%, oklch(52.07% 0.0078 86.88) 50.0%, oklch(61.87% 0.0086 89.32) 57.1%, oklch(69.55% 0.0094 91.72) 64.3%, oklch(73.50% 0.0101 94.09) 71.4%, oklch(74.84% 0.0108 96.70) 78.6%, oklch(74.66% 0.0115 99.27) 85.7%, oklch(73.92% 0.0120 101.49) 92.9%, oklch(73.62% 0.0124 103.06) 100.0%);
+            background-color: #000;
             margin: 0;
             padding: 0;
             width: 100vw;
@@ -50,7 +53,24 @@
             margin: 0 1rem;
             margin-top: 0.5rem;
         }
+        .playback-button {
+            background: none;
+            border: 0;
+            cursor: pointer;
+        }
 
+        .playback-button img {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .playback-button img[hidden] {
+            display: none;
+        }
+
+        #playbackSlider {
+            width: 80%;
+        }
         .playback-checkbox:checked + #playButton {
             display: none;
         }
@@ -67,19 +87,22 @@
     
     <div class="playback">
         <div class="row">
-        <label for="playbackCheckbox" class="playback-checkbox">
-            <input class="playback-checkbox" type="checkbox" id="playbackCheckbox" style="display: none;">
-            <img id="playButton" src="./play.svg" alt="play">
-            <img id="pauseButton" src="./pause.svg" alt="pause">
-        </label>
-        <p id="playbackStatus"></p>
+            <button id="playPauseButton" class="playback-button"
+                    type="button" aria-label="Play live">
+                <img id="playButton" src="./play.svg" alt="">
+                <img id="pauseButton" src="./pause.svg" alt="" hidden>
+            </button>
+            <p id="playbackStatus"></p>
         </div>
-        <input style="width: 80%;" type="range" id="playbackSlider" min="0" max="1" step="0.01" value="0">
-        
+
+        <input id="playbackSlider" type="range"
+            min="0" max="1" step="0.1" value="0" disabled>
     </div>
 </body>
 <script>
     let transitionTimer;
+    let activePlayer = null;
+    let isDraggingSlider = false;
 
     async function getGuide() {
         const response = await fetch("/api/guide", { cache: "no-store" });
@@ -89,7 +112,7 @@
         return response.json();
     }
 
-    async function loadCurrentShow() {
+    async function loadCurrentShow(shouldPlay = true) {
         const status = document.getElementById("playbackStatus");
         const playerHost = document.getElementById("mediaPlayer");
         const channelTitle = new URLSearchParams(location.search).get("channel");
@@ -140,10 +163,12 @@
 
 
             player.className = "player";
-            player.controls = true;
+            player.controls = false;
             player.playsInline = true;
             player.src = currentShow.media_url;
 
+            activePlayer = player;
+            connectPlayerControls(player);
             playerHost.replaceChildren(player);
             status.textContent = `${channelTitle} — ${currentShow.title}`;
 
@@ -165,7 +190,13 @@
                     offsetSeconds,
                     Math.max(0, player.duration - 0.25)
                 );
-
+                if (shouldPlay) {
+                    try {
+                        await player.play();
+                    } catch {
+                        status.textContent += " — press Play to start.";
+                    }
+                }
                 try {
                     await player.play();
                 } catch {
@@ -175,13 +206,74 @@
 
             window.clearTimeout(transitionTimer);
             const remainingMs = end - serverNow;
+            const wasPlaying = !player.paused;
+
             transitionTimer = window.setTimeout(
-                loadCurrentShow,
+                () => loadCurrentShow(wasPlaying),
                 Math.max(1000, remainingMs)
             );
         } catch (error) {
             status.textContent = `Could not load channel: ${error.message}`;
         }
+    }
+    const playPauseButton = document.getElementById("playPauseButton");
+    const playIcon = document.getElementById("playButton");
+    const pauseIcon = document.getElementById("pauseButton");
+    const playbackSlider = document.getElementById("playbackSlider");
+
+    function updatePlayButton() {
+        const isPlaying = activePlayer && !activePlayer.paused;
+
+        playIcon.hidden = Boolean(isPlaying);
+        pauseIcon.hidden = !isPlaying;
+        playPauseButton.setAttribute(
+            "aria-label",
+            isPlaying ? "Pause" : "Play live"
+        );
+    }
+
+    function updatePlaybackSlider() {
+        if (!activePlayer || isDraggingSlider) return;
+
+        const duration = activePlayer.duration;
+        if (!Number.isFinite(duration) || duration <= 0) return;
+
+        playbackSlider.max = String(duration);
+        playbackSlider.value = String(activePlayer.currentTime);
+        playbackSlider.disabled = false;
+    }
+
+    playPauseButton.addEventListener("click", () => {
+        if (activePlayer && !activePlayer.paused) {
+            activePlayer.pause();
+            return;
+        }
+
+        // Reloads the currently scheduled show and seeks to its live position.
+        loadCurrentShow(true);
+    });
+
+    playbackSlider.addEventListener("pointerdown", () => {
+        isDraggingSlider = true;
+    });
+
+    playbackSlider.addEventListener("input", () => {
+        if (activePlayer) {
+            activePlayer.currentTime = Number(playbackSlider.value);
+        }
+    });
+
+    playbackSlider.addEventListener("change", () => {
+        isDraggingSlider = false;
+        updatePlaybackSlider();
+    });
+
+    function connectPlayerControls(player) {
+        player.addEventListener("play", updatePlayButton);
+        player.addEventListener("pause", updatePlayButton);
+        player.addEventListener("timeupdate", updatePlaybackSlider);
+        player.addEventListener("durationchange", updatePlaybackSlider);
+        player.addEventListener("loadedmetadata", updatePlaybackSlider);
     }
 
     loadCurrentShow();
