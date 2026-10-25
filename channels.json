@@ -1,19 +1,5 @@
 [
   {
-    "title": "test",
-    "media": [
-      {
-        "path": "97cb701239d364066b4bf938.mp4",
-        "title": "Fire Resistance Ad",
-        "duration_seconds": 21.739
-      }
-    ],
-    "start_at_utc": "2026-10-24T17:49:27.374849+00:00",
-    "shuffle": true,
-    "shuffle_seed": 1702863385475088406,
-    "type": "music"
-  },
-  {
     "title": "Music",
     "media": [
       {

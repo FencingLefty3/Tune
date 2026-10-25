@@ -8,7 +8,7 @@
         body {
             color: #fff;
             font-family: Arial, sans-serif;
-            background: conic-gradient(from 180deg in oklch, oklch(32.28% 0.0000 89.88) 0.0%, oklch(31.73% 0.0008 77.33) 7.1%, oklch(30.60% 0.0020 78.26) 14.3%, oklch(30.00% 0.0034 79.43) 21.4%, oklch(30.99% 0.0047 80.85) 28.6%, oklch(34.73% 0.0059 82.52) 35.7%, oklch(42.30% 0.0068 84.56) 42.9%, oklch(52.07% 0.0078 86.88) 50.0%, oklch(61.87% 0.0086 89.32) 57.1%, oklch(69.55% 0.0094 91.72) 64.3%, oklch(73.50% 0.0101 94.09) 71.4%, oklch(74.84% 0.0108 96.70) 78.6%, oklch(74.66% 0.0115 99.27) 85.7%, oklch(73.92% 0.0120 101.49) 92.9%, oklch(73.62% 0.0124 103.06) 100.0%);
+            background: radial-gradient(circle,rgba(204, 185, 147, 1) 0%, rgba(31, 31, 31, 1) 90%);
             background-color: #000;
             margin: 0;
             padding: 0;
@@ -29,9 +29,10 @@
         .playback {
             position: absolute;
             bottom: 15%;
-            left: 10%;
-            width: 80%;
+            left: 10dvw;
+            width: 80dvw;
             height: 4rem;
+            padding: 1rem;
             background-color: #000;
             opacity: 0.4;
             border-radius: 0.5rem;
@@ -39,9 +40,15 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            transition: opacity 0.3s ease;
+        }
+        .playback.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
         .row {
             display: flex;
+            width: 100%;
             flex-direction: row;
             justify-content: center;
             align-items: center;
@@ -58,7 +65,7 @@
             border: 0;
             cursor: pointer;
         }
-
+        
         .playback-button img {
             width: 2rem;
             height: 2rem;
@@ -67,7 +74,24 @@
         .playback-button img[hidden] {
             display: none;
         }
-
+        .exit-btn {
+            position: absolute;
+            background: none;
+            border: 0;
+            cursor: pointer;
+            top: 1rem;
+            left: 1rem;
+            background-color: #000;
+            opacity: 0.4;
+            border-radius: 0.5rem;
+            transition: opacity 0.3s ease;
+            padding: 1rem;
+            aspect-ratio: 1/1;
+        }
+        .exit-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
         #playbackSlider {
             width: 80%;
         }
@@ -84,15 +108,25 @@
     <div class="media" id="mediaPlayer">
        <!-- <audio class="player" controls><source src="./music/Chris Stapleton - Bad As I Used To Be (From F1® The Movie) [Official Visualizer] [p13Cn0mONP8].mp3" type="audio/mpeg"></audio>-->
     </div>
-    
-    <div class="playback">
+    <button class="exit-btn" id="exit-btn"><img src="./chevron.svg" alt="" style="transform: rotate(270deg);"></button>
+    <div class="playback" id="playback">
         <div class="row">
+            <p id="playbackStatus" style="position: absolute;left: 1rem;"></p>
             <button id="playPauseButton" class="playback-button"
                     type="button" aria-label="Play live">
                 <img id="playButton" src="./play.svg" alt="">
                 <img id="pauseButton" src="./pause.svg" alt="" hidden>
             </button>
-            <p id="playbackStatus"></p>
+            <div style="display: flex;flex-direction: row;justify-content: center;align-items: center;position: absolute;right: 1rem;">
+            <button id="upButton" class="playback-button">  
+                <img id="up" src="./chevron.svg" alt="">
+            </button>
+            <img id="ChannelIcon" src="./tv.svg" alt="">
+            <button id="downButton" class="playback-button">  
+                <img id="down" src="./chevron.svg" alt="" style="transform: rotate(180deg);">
+            </button>
+            
+            </div>
         </div>
 
         <input id="playbackSlider" type="range"
@@ -103,6 +137,31 @@
     let transitionTimer;
     let activePlayer = null;
     let isDraggingSlider = false;
+
+    const upButton = document.getElementById("upButton");
+    const downButton = document.getElementById("downButton");
+    let changingChannel = false;
+
+    const playback = document.getElementById("playback")
+    const exitBtn = document.getElementById("exit-btn")
+    let idleTimer = null;
+
+    function showPlayback() {
+        playback.classList.remove('hidden');
+        exitBtn.classList.remove('hidden');
+        clearTimeout(idleTimer);
+
+        idleTimer = setTimeout (() => {
+            playback.classList.add('hidden');
+            exitBtn.classList.add('hidden');
+        }, 2000);
+    }
+
+    function truncate(str) {
+        if (str.length <= 50) return str;
+  
+            return str.slice(0, 50 - 3) + '...';
+    }
 
     async function getGuide() {
         const response = await fetch("/api/guide", { cache: "no-store" });
@@ -170,7 +229,9 @@
             activePlayer = player;
             connectPlayerControls(player);
             playerHost.replaceChildren(player);
-            status.textContent = `${channelTitle} — ${currentShow.title}`;
+            string = `${channelTitle} — ${currentShow.title}`       
+
+            status.textContent = truncate(string);
 
             player.addEventListener("loadedmetadata", async () => {
                 const estimatedServerNow =
@@ -275,6 +336,68 @@
         player.addEventListener("durationchange", updatePlaybackSlider);
         player.addEventListener("loadedmetadata", updatePlaybackSlider);
     }
+    function exit() {
+        window.location.href = "guide.html"
+    }
 
+    async function changeChannel(direction) {
+        if (changingChannel) return;
+        changingChannel = true;
+        upButton.disabled = true;
+        downButton.disabled = true;
+
+        const status = document.getElementById("playbackStatus");
+
+        try {
+            const guide = await getGuide();
+            const channels = guide.channels;
+
+            if (!Array.isArray(channels) || channels.length === 0) {
+                throw new Error("There are no channels to switch to.");
+            }
+
+            const currentTitle =
+                new URLSearchParams(location.search).get("channel");
+            const currentIndex = channels.findIndex(
+                channel => channel.title === currentTitle
+            );
+
+            if (currentIndex === -1) {
+                throw new Error(`Channel "${currentTitle}" was not found.`);
+            }
+
+            const nextIndex =
+                (currentIndex + direction + channels.length) % channels.length;
+            const nextChannel = channels[nextIndex];
+
+            const url = new URL(location.href);
+            url.searchParams.set("channel", nextChannel.title);
+            history.replaceState(null, "", url);
+
+            window.clearTimeout(transitionTimer);
+            if (activePlayer) {
+                activePlayer.pause();
+                activePlayer.removeAttribute("src");
+                activePlayer.load();
+                activePlayer = null;
+                updatePlayButton();
+            }
+
+            await loadCurrentShow(true);
+        } catch (error) {
+            status.textContent = `Could not change channel: ${error.message}`;
+        } finally {
+            changingChannel = false;
+            upButton.disabled = false;
+            downButton.disabled = false;
+        }
+    }
+
+    upButton.addEventListener("click", () => changeChannel(-1));
+    downButton.addEventListener("click", () => changeChannel(1));
+
+    document.addEventListener('mousemove', showPlayback);
+    exitBtn.addEventListener('click', exit)
     loadCurrentShow();
+    showPlayback();
 </script>
