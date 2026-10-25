@@ -1,14 +1,15 @@
 from pathlib import Path
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QAbstractItemView
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtGui import QIcon
 import server
+import json
 import sys
 
+DATA_DIR = Path(__file__).resolve().parent
 
 class QMainWindow(QWidget):
     def __init__(self):
@@ -46,6 +47,22 @@ def onSubmit(self):
 
     server.Create_channel(title, media_files, shuffle, media_type)
     self.load_channels()
+
+def Delete_channel(index, self):
+    channels = server.Read_chanel()
+    if not isinstance(channels, list):
+        raise ValueError("Channels.json must contain channels.")
+    if not 0 <= index < len(channels):
+        raise IndexError(f"channel index is out of range: {index}")
+
+    deleted_channel = channels.pop(index)
+    with (DATA_DIR / "channels.json").open("w", encoding="utf-8") as file:
+        json.dump(channels, file, indent=2)
+
+    self.load_channels()
+
+    return deleted_channel
+    
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
@@ -237,6 +254,13 @@ class Ui_MainWindow(object):
             title_font.setPointSize(20)
             title_label.setFont(title_font)
 
+            delete_button = QPushButton("Delete", card)
+            delete_button.clicked.connect(
+                lambda checked=False, channel_index=index:
+                    Delete_channel(channel_index, self)
+            )
+            card_layout.addWidget(delete_button)
+
             genre_font = QFont()
             genre_font.setPointSize(10)
             genre_label.setFont(genre_font)
@@ -266,13 +290,21 @@ class Ui_MainWindow(object):
         if getattr(self, "local_host_server", None) is not None:
             return
 
+        logger = server.configure_host_logging()
+        self.local_host_logger = logger
+        logger.info(
+            "Starting HTTP host; resources=%s data=%s",
+            server.RESOURCE_DIR,
+            server.DATA_DIR,
+        )
         handler = partial(
             server.TuneRequestHandler,
-            directory=str(server.BASE_DIR),
+            directory=str(server.RESOURCE_DIR),
         )
         try:
-            self.local_host_server = ThreadingHTTPServer(("", 8000), handler)
+            self.local_host_server = server.TuneHTTPServer(("", 8000), handler)
         except OSError as error:
+            logger.exception("Could not bind HTTP host to port 8000")
             QMessageBox.critical(
                 self.host,
                 "Unable to start host",
@@ -281,11 +313,18 @@ class Ui_MainWindow(object):
             return
 
         self.local_host_thread = Thread(
-            target=self.local_host_server.serve_forever,
+            target=self._serve_host,
             daemon=True,
         )
         self.local_host_thread.start()
         self.host.setStyleSheet("background-color: #4caf50;")
+
+    def _serve_host(self):
+        try:
+            self.local_host_logger.info("HTTP host serving on port 8000")
+            self.local_host_server.serve_forever()
+        except Exception:
+            self.local_host_logger.exception("HTTP host stopped unexpectedly")
 
     def stop_host_server(self):
         host_server = getattr(self, "local_host_server", None)

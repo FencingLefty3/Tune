@@ -1,4 +1,6 @@
 import json
+import logging
+import os
 import subprocess
 from pathlib import Path
 import time
@@ -6,18 +8,46 @@ import secrets
 import hashlib
 import random
 import shutil
+import sys
 import uuid
 import math
 
 from datetime import datetime, timedelta, timezone
-from http.server import SimpleHTTPRequestHandler
-from urllib.parse import quote, urlsplit
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import quote, unquote, urlsplit
 from tinytag import TinyTag, TinyTagException
 
-BASE_DIR = Path(__file__).parent
-MUSIC_DIR = BASE_DIR / "music"
-TV_DIR = BASE_DIR / "tv"
-MEDIA_DIR = BASE_DIR / "media"
+RESOURCE_DIR = Path(
+    getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)
+)
+if getattr(sys, "frozen", False):
+    DATA_DIR = Path(
+        os.environ.get(
+            "LOCALAPPDATA",
+            Path.home() / "AppData" / "Local",
+        )
+    ) / "Tune"
+else:
+    DATA_DIR = Path(__file__).resolve().parent
+
+BASE_DIR = RESOURCE_DIR
+MUSIC_DIR = DATA_DIR / "music"
+TV_DIR = DATA_DIR / "tv"
+MEDIA_DIR = DATA_DIR / "media"
+
+
+def configure_host_logging():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger("tune.host")
+    logger.setLevel(logging.INFO)
+    if not logger.handlers:
+        handler = logging.FileHandler(DATA_DIR / "host.log", encoding="utf-8")
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s %(levelname)s %(message)s"
+        ))
+        logger.addHandler(handler)
+        logger.propagate = False
+    return logger
 
 import socket
 
@@ -108,14 +138,16 @@ def create_tv_records():
     return records
 
 def Read_chanel():
-    channels_file = BASE_DIR / "channels.json"
-    try:
-        file = channels_file.open("r")
-    except FileNotFoundError:
-        channels_file.write_text("[]", encoding="utf-8")
-        return []
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    channels_file = DATA_DIR / "channels.json"
+    if not channels_file.exists():
+        bundled_channels = RESOURCE_DIR / "channels.json"
+        if bundled_channels.is_file():
+            shutil.copy2(bundled_channels, channels_file)
+        else:
+            channels_file.write_text("[]", encoding="utf-8")
 
-    with file:
+    with channels_file.open("r", encoding="utf-8") as file:
         channels = json.load(file)
 
     return channels
@@ -153,7 +185,7 @@ def Create_channel(title, selected_paths, shuffle, media_type):
         shutil.copy2(source, stored)
 
         media.append({
-            "path": stored.relative_to(BASE_DIR).as_posix(),
+            "path": stored.relative_to(DATA_DIR).as_posix(),
             "title": source.stem,
             "duration_seconds": duration,
         })
@@ -171,7 +203,7 @@ def Create_channel(title, selected_paths, shuffle, media_type):
         "type": media_type,
     })
 
-    with (BASE_DIR / "channels.json").open("w", encoding="utf-8") as file:
+    with (DATA_DIR / "channels.json").open("w", encoding="utf-8") as file:
         json.dump(channels, file, indent=2)
         
 def media_order(channel, cycle_number):
@@ -277,6 +309,26 @@ def scheduled_events(channel, now=None, count=100):
     return events
 
 class TuneRequestHandler(SimpleHTTPRequestHandler):
+    def translate_path(self, path):
+        request_path = urlsplit(path).path
+        if request_path == "/media" or request_path.startswith("/media/"):
+            relative_path = unquote(request_path[len("/media/"):])
+            media_root = MEDIA_DIR.resolve()
+            media_path = (media_root / relative_path).resolve()
+            try:
+                media_path.relative_to(media_root)
+            except ValueError:
+                return str(media_root / "__invalid_media_path__")
+            return str(media_path)
+        return super().translate_path(path)
+
+    def log_message(self, format_string, *args):
+        logging.getLogger("tune.host").info(
+            "%s - %s",
+            self.client_address[0],
+            format_string % args,
+        )
+
     def do_GET(self):
         if urlsplit(self.path).path != "/api/guide":
             super().do_GET()
@@ -302,6 +354,15 @@ class TuneRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
+
+
+class TuneHTTPServer(ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        logging.getLogger("tune.host").exception(
+            "Unhandled HTTP request error from %s",
+            client_address[0],
+        )
+
 
 if __name__ == "__main__":
     for r in create_music_records() + create_tv_records():

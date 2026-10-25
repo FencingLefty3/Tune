@@ -3,103 +3,103 @@
     "title": "Music",
     "media": [
       {
-        "path": "media/5260db6efd534958928004af7e2c7e0d.mp3",
+        "path": "media/4d04d9b11f36493188cd029059d2a4ba.mp3",
         "title": "Aaron-Burr_-Sir",
         "duration_seconds": 156.768
       },
       {
-        "path": "media/e787b5fc33774fb085314e715298fa79.mp3",
+        "path": "media/109e1e6760a14f2bac640b84ce5b0597.mp3",
         "title": "Alexander-Hamilton",
         "duration_seconds": 235.152
       },
       {
-        "path": "media/eb6e0b3b26684d1aaa73db07b3a70f00.mp3",
+        "path": "media/20deebbdaadc465d9f77ed60f4cc458b.mp3",
         "title": "Ax and the Hatchetmen - Hotel Room",
         "duration_seconds": 149.064
       },
       {
-        "path": "media/f584369119a648d0b0566d31b0d3c542.mp3",
+        "path": "media/072e21e6d45a47308ed5f175962c6dd2.mp3",
         "title": "Chris Stapleton - Bad As I Used To Be (From F1\u00ae The Movie) [Official Visualizer] [p13Cn0mONP8]",
         "duration_seconds": 299.8857142857143
       },
       {
-        "path": "media/f63a015ab4434dc6a982851f155e58b8.mp3",
+        "path": "media/486b4ade2d6741e2ac84bb44699cbcf8.mp3",
         "title": "Farmer-Refuted",
         "duration_seconds": 113.328
       },
       {
-        "path": "media/7886bd1240ab4c239d7da7c411585757.mp3",
+        "path": "media/e7949c0dadd0450e858d312cc55cc402.mp3",
         "title": "Formula 1 Theme",
         "duration_seconds": 194.376
       },
       {
-        "path": "media/52a001cf4a994bdc8c1205c053dc011b.mp3",
+        "path": "media/3b1789434bd94a7da57389c1b303e419.mp3",
         "title": "Here's The Thing [W89VEjv2-ng]",
         "duration_seconds": 163.44816326530614
       },
       {
-        "path": "media/3bcefa9a2fa04432aa015f30d2d4d248.mp3",
+        "path": "media/75ad416205784fa3bc8568cc03e37c20.mp3",
         "title": "My-Shot",
         "duration_seconds": 332.04
       },
       {
-        "path": "media/2a7fd1cbd4104242a9376fa737ecc9f5.mp3",
+        "path": "media/f2ea1d4d740e4c408511d6d4e70a1b3e.mp3",
         "title": "Noah Kahan - The Great Divide (Official Music Video) [SKs80r2Lp34]",
         "duration_seconds": 345.18204081632655
       },
       {
-        "path": "media/570c674a72034fe0bf3818e0d11f1e18.mp3",
+        "path": "media/8c39792e1e074d398967e69dda5b957c.mp3",
         "title": "Rihanna - Don't Stop The Music [yd8jh9QYfEs]",
         "duration_seconds": 233.184
       },
       {
-        "path": "media/a47f052df75741079377f96dca1aa2b4.mp3",
+        "path": "media/1b7e58cbc94341fdba17ed06cab5c1ac.mp3",
         "title": "Tame Impala - Loser",
         "duration_seconds": 223.128
       },
       {
-        "path": "media/eb6984838d844df4adbf84e0ba78d12d.mp3",
+        "path": "media/84fad3da7fbe45e3bc59ba62d15b20b8.mp3",
         "title": "The Schuyler Sisters",
         "duration_seconds": 184.968
       },
       {
-        "path": "media/cc4e3c6c54ca4daabf23687a3725643f.mp3",
+        "path": "media/b0b134db9c854c8881fd89d9f6d4e137.mp3",
         "title": "The-Story-of-Tonight",
         "duration_seconds": 93.12
       },
       {
-        "path": "media/09b34546c5814cd5a871f23c91e09172.mp3",
+        "path": "media/6eae7b2e96c145f79c9e1e09a4d8042e.mp3",
         "title": "You_ll-Be-Back",
         "duration_seconds": 209.856
       }
     ],
-    "start_at_utc": "2026-10-24T18:24:40.522213+00:00",
-    "shuffle": false,
-    "shuffle_seed": 12417645978978702516,
+    "start_at_utc": "2026-10-25T23:47:28.561219+00:00",
+    "shuffle": true,
+    "shuffle_seed": 14612137931399452636,
     "type": "music"
   },
   {
-    "title": "tv",
+    "title": "TV",
     "media": [
       {
-        "path": "media/9554eff3c5a54d2ca00194ae0f4fdc3e.mov",
+        "path": "media/3fe4cc75c7874d6d9e94f32df54958e2.mov",
         "title": "IMG_1232",
         "duration_seconds": 38.335
       },
       {
-        "path": "media/592a3df330d641a88ba73cb3fca888d3.mp4",
+        "path": "media/3e2b2ce62c3e42fe86602e26d77dc2b9.mp4",
         "title": "IMG_1454",
         "duration_seconds": 21.739
       },
       {
-        "path": "media/7146b5bf4c1d40df9c43d056bce4ee31.mov",
+        "path": "media/6f11f3403aee4a92b21f2e107eb5b325.mov",
         "title": "Medical_Ad_Rough-Edit",
         "duration_seconds": 72.86666666666666
       }
     ],
-    "start_at_utc": "2026-10-25T15:24:45.344738+00:00",
+    "start_at_utc": "2026-10-25T23:50:41.155546+00:00",
     "shuffle": true,
-    "shuffle_seed": 2756654553615404514,
+    "shuffle_seed": 13134308857159961727,
     "type": "video"
   }
 ]
