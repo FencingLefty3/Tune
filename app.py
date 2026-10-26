@@ -127,6 +127,7 @@ class Ui_MainWindow(object):
         self.label_ip.setGeometry(QRect(480, 320, 141, 31))
         self.Port = QTextEdit(self.centralwidget)
         self.Port.setObjectName(u"Port")
+        self.Port.setPlainText("8000")
         self.Port.setGeometry(QRect(620, 290, 141, 31))
         self.label_port = QLabel(self.centralwidget)
         self.label_port.setObjectName(u"label_port")
@@ -288,6 +289,13 @@ class Ui_MainWindow(object):
     def host_server(self):
         if getattr(self, "local_host_server", None) is not None:
             return
+        try:
+            port = int(self.Port.toPlainText().strip() or "8000")
+            if not 1 <= port <= 65535:
+                raise ValueError("Port must be between 1 and 65535.")
+        except ValueError as error:
+            QMessageBox.warning(self.host, "Invalid port", str(error))
+            return
 
         logger = server.configure_host_logging()
         self.local_host_logger = logger
@@ -301,7 +309,7 @@ class Ui_MainWindow(object):
             directory=str(server.RESOURCE_DIR),
         )
         try:
-            self.local_host_server = server.TuneHTTPServer(("", 8000), handler)
+            self.local_host_server = server.TuneHTTPServer(("", port), handler)
         except OSError as error:
             logger.exception("Could not bind HTTP host to port 8000")
             QMessageBox.critical(
