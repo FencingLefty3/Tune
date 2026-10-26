@@ -9,7 +9,6 @@ import server
 import json
 import sys
 
-DATA_DIR = Path(__file__).resolve().parent
 
 class QMainWindow(QWidget):
     def __init__(self):
@@ -56,7 +55,7 @@ def Delete_channel(index, self):
         raise IndexError(f"channel index is out of range: {index}")
 
     deleted_channel = channels.pop(index)
-    with (DATA_DIR / "channels.json").open("w", encoding="utf-8") as file:
+    with (server.DATA_DIR / "channels.json").open("w", encoding="utf-8") as file:
         json.dump(channels, file, indent=2)
 
     self.load_channels()
