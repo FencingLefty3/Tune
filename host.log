@@ -1,8 +1,0 @@
-2026-10-25 20:09:04,433 INFO Starting HTTP host; resources=E:\JLN-LPTP\ProjectsMain\Terra\Tune data=E:\JLN-LPTP\ProjectsMain\Terra\Tune
-2026-10-25 20:09:06,713 INFO Starting HTTP host; resources=E:\JLN-LPTP\ProjectsMain\Terra\Tune data=E:\JLN-LPTP\ProjectsMain\Terra\Tune
-2026-10-25 20:10:06,195 INFO Starting HTTP host; resources=E:\JLN-LPTP\ProjectsMain\Terra\Tune data=E:\JLN-LPTP\ProjectsMain\Terra\Tune
-2026-10-25 20:12:05,560 INFO Starting HTTP host; resources=E:\JLN-LPTP\ProjectsMain\Terra\Tune data=E:\JLN-LPTP\ProjectsMain\Terra\Tune
-2026-10-25 20:12:05,584 INFO HTTP host serving on port 8000
-2026-10-25 20:12:19,110 INFO 192.168.1.173 - "GET / HTTP/1.1" 200 -
-2026-10-25 20:12:19,117 INFO 192.168.1.173 - "GET /icon.png HTTP/1.1" 200 -
-2026-10-25 20:12:19,136 INFO 192.168.1.173 - "GET /tvLogo.ico HTTP/1.1" 200 -
